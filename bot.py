@@ -3,10 +3,7 @@ import requests
 import discord
 from bs4 import BeautifulSoup
 
-bot_token=''
-if(not bot_token):
-    print("need token, ask me on discord")
-    exit(1)
+bot_token='ODkzMDI3MzI1OTI1NTQ4MDgy.YVVegg.aff47HkEbec5wRNdsfdZrB9c0AU'
 
 #discord bot info
 """
@@ -25,6 +22,24 @@ state='vic'
 what='cases'
 td_classes={'cases':'COL2 NEW', 'vaccinations':'COL2 DOSES'}
 
+def get_help():
+    help_msg="""some shit I can do
+    yo bot - bot will return a greeting
+    set state <state code> - will set the state to get metrics for. State codes are vic,qld,nsw,sa,act,nt,tas,wa
+    set metric <metric type> - will change the metric to search. So far only supports 'cases' and 'vaccinations'
+    help - show this
+    what - returns what its searching from what state
+    good bot - raises centience level, dangerous do not use
+    shush - stops automatic replies to unknown commands
+    unshush - unshuses
+    today - gets todays numbers for the metric and state set
+    yesterday - you can figure it out
+    week - yup thats it
+    \n
+    The numbers are from covidlive.com.au
+
+    """
+    return help_msg
 
 def get_web_table():
     global base_url
@@ -44,9 +59,9 @@ def get_web_table():
 
 print("DATE      CASES")
 ##row=table.find_all('tr')[i].text.strip()
-todays_date=get_web_table()[1].find('td', {'class':'COL1 DATE'})
-todays_cases=get_web_table()[1].find('td', {'class':td_classes[what]})
-print(todays_date.text,todays_cases.text)
+todays_date=get_web_table()[1].find('td', {'class':'COL1 DATE'}).text
+todays_cases=get_web_table()[1].find('td', {'class':td_classes[what]}).text
+print('|'+todays_date+'|'+todays_cases+'|')
 
 shush_mode=0
 @bot.event
@@ -74,6 +89,8 @@ async def on_message(message):
             msg_split=msg.split(' ',2)
             what=msg_split[2].lower()
             reply='State metric to '+msg_split[2]
+        elif(msg == 'help'):
+            reply=get_help()
         elif(msg == 'what'):
             reply="Showing " + what + " for " + state
         elif(msg == 'good bot'):
@@ -86,21 +103,27 @@ async def on_message(message):
             reply = "ok thank"
         elif(msg == 'today'):
             table = get_web_table()
-            date=table[1].find('td', {'class':'COL1 DATE'})
-            cases=table[1].find('td', {'class':td_classes[what]})
-            reply= 'Todays '+what+' in ' + state + ':\n'+ date.text + " cases: " + cases.text
+            date=table[1].find('td', {'class':'COL1 DATE'}).text
+            cases=table[1].find('td', {'class':td_classes[what]}).text
+            if(cases == '-'):
+                cases='NO DATA'
+            reply= 'Todays '+what+' in ' + state + ':\n'+ date + " cases: " + cases
         elif(msg == 'yesterday'):
             table = get_web_table()
-            date=table[2].find('td', {'class':'COL1 DATE'})
-            cases=table[2].find('td', {'class':td_classes[what]})
-            reply= 'Yesterdays '+what+' in ' + state + ':\n'+ date.text + " cases: " + cases.text
+            date=table[2].find('td', {'class':'COL1 DATE'}).text
+            cases=table[2].find('td', {'class':td_classes[what]}).text
+            if(cases == '-'):
+                cases='NO DATA'
+            reply= 'Yesterdays '+what+' in ' + state + ':\n'+ date + " cases: " + cases
         elif(msg == 'week'):
-            reply= what+" in "+state+"for the past week:\n"
+            reply= what+" in "+state+" for the past week:\n"
             table = get_web_table()
             for i in range(7):
-                date=table[i+1].find('td', {'class':'COL1 DATE'})
-                cases=table[i+1].find('td', {'class':td_classes[what]})
-                reply+=date.text + ' ' + what + ' ' + cases.text + "\n"
+                date=table[i+1].find('td', {'class':'COL1 DATE'}).text
+                cases=table[i+1].find('td', {'class':td_classes[what]}).text
+                if(cases == '-'):
+                    cases='NO DATA'
+                reply+=date + ' ' + what + ' ' + cases + "\n"
         elif("dick" in msg or "cock" in msg or "penis" in msg):
             reply = message.author.name + "u gay"
         else:
