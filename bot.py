@@ -3,7 +3,9 @@ import requests
 import discord
 from bs4 import BeautifulSoup
 
-bot_token='ODkzMDI3MzI1OTI1NTQ4MDgy.YVVegg.aff47HkEbec5wRNdsfdZrB9c0AU'
+bot_token=''
+if(not bot_token):
+    print("need token, ask me on discord")
 
 #discord bot info
 """
